@@ -17,80 +17,37 @@ mdc: true
 ## ViewModelで扱える状態、扱いにくい状態
 
 <div class="pt-8 text-sm opacity-60">
-ゲームにおける Domain / Simulation / Presentation の境界から考える
+Domain / Simulation / Presentation の境界から考える
 </div>
 
 ---
 layout: default
 ---
 
-# 今日の結論
+# 先に結論
 
-MVVMがゲームに向かない、というより、<br>
-**MVVMがきれいに成立する前提が、ゲームでは崩れやすい**。
+MVVMそのものがゲームに向かない、という話ではありません。
 
 <br>
 
-<div class="p-5 border border-emerald-500/40 rounded-xl bg-emerald-500/10">
+<div class="p-6 border border-emerald-500/40 rounded-xl bg-emerald-500/10">
 
-## MVVMが得意な形
+## MVVMがきれいに働く条件
 
 ```text
-Presentation State を ViewModel に置く
+Presentationの論理状態をViewModelに置ける
         ↓
-View はそれを具体的な表示へ写す
+Viewを、その状態の投影として扱える
 ```
 
 </div>
 
 <br>
 
-<div class="p-5 border border-red-500/40 rounded-xl bg-red-500/10">
+ゲームでは、この前提が崩れやすい場面があります。
 
-## ゲームで崩れやすい点
-
-- 表示されているオブジェクト自身が、状態を持って時間発展する
-- Modelの現在とPresentationの現在が一致しないことがある
-
-</div>
-
----
-layout: default
----
-
-# 前提：MVVM = データバインディングではない
-
-Data Binding / Rx / Command は、View と ViewModel を接続するための実装手段です。
-
-<br>
-
-<div class="grid grid-cols-2 gap-6 pt-2">
-
-<div class="p-4 border border-blue-500/30 rounded-xl bg-blue-500/5">
-
-## MVVMの関心
-
-- Viewから表示上の判断を分離する
-- ViewModelにPresentationの論理状態を置く
-- Viewはその状態を具体的な表示へ落とす
-
-</div>
-
-<div class="p-4 border border-amber-500/30 rounded-xl bg-amber-500/5">
-
-## Bindingの関心
-
-- 値の変更をどうViewへ伝えるか
-- UIイベントをどうViewModelへ渡すか
-- 購読・解除・寿命をどう管理するか
-
-</div>
-
-</div>
-
-<br>
-
-> ReactivePropertyを使っているかどうかは、MVVMの本質ではない。
+- Modelの現在と、Presentationの現在が一致しない
+- 画面に出ているオブジェクト自身が、ゲーム状態を変えている
 
 ---
 layout: default
@@ -99,55 +56,29 @@ layout: default
 # ViewModelとは何か
 
 ViewModelは、Viewのピクセルや描画APIではなく、<br>
-**その画面にとって意味のあるPresentation Stateをモデル化する**。
-
-<br>
-
-```text
-[ Model / Application ]
-    PlayerHp = 23 / 100
-          │
-          ▼  presentation向けに解釈する
-[ ViewModel ]
-    HpRate = 0.23
-    IsDanger = true
-          │
-          ▼  具体的に表示する
-[ View ]
-    ゲージ幅を23%にする
-    危険状態として強調する
-```
-
-<br>
-
-- `HpRate` や `IsDanger` は、ViewModelに置きやすい
-- 色・点滅・マテリアル切り替えは、View側の具体表現として扱いやすい
-
----
-layout: default
----
-
-# M と VM/V の間には境界がある
-
-MVVMを単なる三段変換として見ると、少し誤解しやすい。
+**その画面にとって意味のある状態**を表すものです。
 
 <br>
 
 ```text
 Model / Application
-  サーバー状態のローカルコピー、UseCase、Repository、Domain Logic など
-
-──────────────────── boundary
-
-Presentation
-  ViewModel  = 今ユーザーに提示する論理状態
-  View       = その具体的な表示
+  PlayerHp = 23 / 100
+        │
+        ▼  presentation向けに解釈する
+ViewModel
+  HpRate = 0.23
+  IsDanger = true
+        │
+        ▼  具体的に表示する
+View
+  ゲージ幅を23%にする
+  危険状態として強調する
 ```
 
 <br>
 
-ViewModelはModelのミラーではありません。<br>
-**Modelを材料にしつつ、Presentationの現在を表すためのモデル**です。
+Data Binding / Rx / Command は、この接続を実装する手段です。<br>
+それ自体がMVVMの本体ではありません。
 
 ---
 layout: default
@@ -157,15 +88,16 @@ layout: default
 
 例：パーティーステータス画面。
 
+<br>
+
 ```text
 Domain / Model
   PartyMembers = [Alice, Bob, Carol]
 
-        ↓ 画面で誰を見ているかは、Domainには存在しない
+        ↓  画面で誰を見ているかは、Domainには存在しない
 
 ViewModel
   SelectedMemberIndex = 1
-        ↓
   SelectedMember = Bob
 
         ↓
@@ -177,16 +109,18 @@ View
 
 <br>
 
-- 「Alice / Bob / Carol がパーティにいる」── **Domainの事実**
-- 「いま Bob を見ている」── **Presentationの状態**
+<div class="p-4 border border-emerald-500/40 rounded-xl bg-emerald-500/10">
 
-> **このように、Presentationの論理状態をViewModelに置き、Viewをその投影にできる領域ではMVVMが素直に機能する。**
+**「今Bobを見ている」はPresentationの状態です。**  
+このような状態をViewModelに置ける領域では、MVVMは素直に機能します。
+
+</div>
 
 ---
 layout: default
 ---
 
-# ただし、ゲームには「演出の時間」がある
+# 壁1：Presentationには独自の時間がある
 
 例：ソーシャルRPGの限界突破演出。
 
@@ -197,7 +131,7 @@ layout: default
         ↓
 API成功。Model層では 2凸 → 3凸 が確定
         ↓
-でもPresentationでは、まだ2凸の画面から演出を始めたい
+でも画面では、まだ2凸の状態から演出を始めたい
         ↓
 演出のrevealタイミングで、はじめて3凸を見せたい
 ```
@@ -205,7 +139,7 @@ API成功。Model層では 2凸 → 3凸 が確定
 <br>
 
 ここでModelの更新をViewModelへ即時反映すると、<br>
-**演出前に結果だけが一瞬表示される**。
+**演出前に結果だけが一瞬表示される**ことがあります。
 
 <br>
 
@@ -240,16 +174,16 @@ Model time:        API成功 ───────────── 3凸
 Presentation time: 2凸 ── 演出 ── reveal ── 3凸
 ```
 
-ViewModelは「Modelの最新値」ではなく、<br>
-**今ユーザーに提示している状態**を表す。
+ViewModelは「Modelのライブミラー」ではなく、<br>
+**今ユーザーに提示している状態**を表します。
 
 ---
 layout: default
 ---
 
-# インゲームでは、Viewが単なるViewではない
+# 壁2：3Dプレイヤーは単なるViewではない
 
-探索中の3Dプレイヤーを考える。
+探索中の3Dプレイヤーを考えます。
 
 <br>
 
@@ -268,7 +202,7 @@ Transform.position が変わる
 <br>
 
 このGameObjectは、表示結果であるだけではありません。<br>
-**ゲーム世界の次の状態を作っている**。
+**ゲーム世界の次の状態を作っています。**
 
 <br>
 
@@ -308,7 +242,7 @@ Simulation Actor と見る方が自然。
 
 <div class="p-4 border border-emerald-500/30 rounded-xl bg-emerald-500/5">
 
-## ターン制バトルの3D演出
+## ターン制バトルの演出
 
 ```text
 Battle Modelが結果を決める
@@ -326,14 +260,14 @@ Presentation Actor / View として扱いやすい。
 layout: default
 ---
 
-# ゲームには複数の状態空間がある
+# ここで抽象化する：ゲームには複数の状態空間がある
 
 「ModelかViewか」だけでは、ゲームを説明しきれません。
 
 <br>
 
 ```text
-Remote / Domain State
+Domain / Application State
   所持金、アイテム、キャラの凸段階、クエスト進行
 
 World Simulation State
@@ -346,7 +280,7 @@ Presentation State
 <br>
 
 これらはすべて「状態」ですが、<br>
-**意味・寿命・更新タイミング・authority が違う**。
+**意味・寿命・更新タイミング・authority が違います。**
 
 ---
 layout: default
@@ -373,84 +307,14 @@ Quest condition satisfied
 
 <br>
 
-Domainは「到達したら進行する」というルールを扱える。<br>
-しかし、TransformやColliderを自前で観測するわけではない。
+Domainは「到達したら進行する」というルールを扱えます。<br>
+しかし、TransformやColliderを自前で観測するわけではありません。
 
 ---
 layout: default
 ---
 
-# オンラインなら、authorityも分かれる
-
-クライアントがCollider侵入を観測したとしても、<br>
-サーバーから見ればそれはまだ **claim** です。
-
-<br>
-
-```text
-Client Simulation
-  EnteredArea(TempleEntrance)
-        ↓
-Client Application
-  現在のクエストに関係ありそうならAPIを呼ぶ
-        ↓
-Server Application / Domain
-  現在の進行状況・条件・妥当性を確認して確定する
-```
-
-<br>
-
-- Client側判定：APIを呼ぶかどうかのprefilter
-- Server側判定：ゲーム状態を進めてよいかのauthoritativeな判断
-
-同じ条件を見ていても、責務は同じではない。
-
----
-layout: default
----
-
-# MVVMが向く場所・注意が必要な場所
-
-<div class="grid grid-cols-2 gap-6">
-
-<div class="p-4 border-2 border-emerald-500/50 rounded-xl bg-emerald-500/5">
-
-## 向きやすい領域
-
-- 設定
-- ショップ
-- インベントリ
-- ステータス画面
-- ターン制バトルのUIや演出制御の一部
-
-<br>
-
-ViewをViewModelの投影として扱いやすい。
-
-</div>
-
-<div class="p-4 border-2 border-amber-500/50 rounded-xl bg-amber-500/5">
-
-## 注意が必要な領域
-
-- 探索中の3Dプレイヤー
-- Physics / Navigation
-- Colliderによる進行判定
-- カットシーンや結果開示のタイミング
-
-<br>
-
-SimulationやPresentation timeを無視して同期すると壊れやすい。
-
-</div>
-
-</div>
-
----
-layout: default
----
-
-# まとめ
+# まとめ：一番短い答え
 
 <br>
 
