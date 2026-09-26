@@ -150,57 +150,37 @@ ViewModelはModelのミラーではありません。<br>
 **Modelを材料にしつつ、Presentationの現在を表すためのモデル**です。
 
 ---
-layout: two-cols
+layout: default
 ---
 
 # Presentationにしかない状態
 
-例：パーティーステータス画面
+例：パーティーステータス画面。
 
 ```text
 Domain / Model
   PartyMembers = [Alice, Bob, Carol]
-```
 
-これはゲーム世界の事実です。
+        ↓ 画面で誰を見ているかは、Domainには存在しない
 
-<br>
-
-```text
-Presentation
+ViewModel
   SelectedMemberIndex = 1
-```
-
-これは「いまBobのタブを見ている」という、画面上の状態です。
-
-::right::
-
-<div class="pl-4 pt-8">
-
-<div class="p-4 border border-emerald-500/30 rounded-xl bg-emerald-500/10">
-
-## ここではMVVMがよく効く
-
-```text
-SelectedMemberIndex
         ↓
-SelectedMember
+  SelectedMember = Bob
+
         ↓
-表示内容・選択タブ
+
+View
+  Bobのステータスを表示
+  Bobのタブを選択状態にする
 ```
-
-ViewをViewModelの投影として扱いやすい。
-
-</div>
 
 <br>
 
-<div class="text-sm opacity-80">
-このスコープでは、ViewModelを<br>
-「presentation state の基準表現」と見なせる。
-</div>
+- 「Alice / Bob / Carol がパーティにいる」── **Domainの事実**
+- 「いま Bob を見ている」── **Presentationの状態**
 
-</div>
+> **このように、Presentationの論理状態をViewModelに置き、Viewをその投影にできる領域ではMVVMが素直に機能する。**
 
 ---
 layout: default
