@@ -145,39 +145,38 @@ Modelの値をただ横流しするだけなら、それはViewModelというよ
 -->
 
 ---
-layout: default
+layout: two-cols
 ---
 
 # Presentationにしかない状態
 
 例：パーティーステータス画面。
 
-<br>
-
 ```text
 Domain / Model
   PartyMembers = [Alice, Bob, Carol]
-
-        ↓  画面で誰を見ているかは、Domainには存在しない
-
-ViewModel
+        ↓
+ViewModel (Presentation状態)
   SelectedMemberIndex = 1
   SelectedMember = Bob
-
         ↓
-
 View
   Bobのステータスを表示
   Bobのタブを選択状態にする
 ```
 
-<br>
-
-<div class="p-4 border border-emerald-500/40 rounded-xl bg-emerald-500/10">
+<div class="p-3 border border-emerald-500/40 rounded-xl bg-emerald-500/10 text-sm mt-3">
 
 **「今Bobを見ている」は、ゲーム世界の事実ではない。**  
 それはPresentationの状態です。
 
+</div>
+
+::right::
+
+<div class="pl-4 pt-4">
+  <img src="/images/party_status_tabs.png" class="rounded-xl border border-white/10 shadow-lg w-full" alt="Party Status UI Placeholder" />
+  <div class="text-xs text-gray-400 mt-2 text-center">※実際のゲームステータス画面・タブ選択スクショに置換想定</div>
 </div>
 
 <!--
@@ -279,14 +278,12 @@ ViewModelというと、ReactivePropertyを持っていて、ViewがSubscribeす
 -->
 
 ---
-layout: default
+layout: two-cols
 ---
 
 # 壁1：正しい値なのに、表示するとバグになる
 
 例：ソーシャルRPGの限界突破演出。
-
-<br>
 
 ```text
 ユーザーが「限界突破」ボタンを押す
@@ -298,14 +295,19 @@ API成功。Model層では 2凸 → 3凸 が確定
 演出のrevealタイミングで、はじめて3凸を見せたい
 ```
 
-<br>
-
+<div class="text-sm mt-2">
 Modelの更新をViewModelへ即時反映すると、<br>
-**演出前に結果だけが一瞬表示される**ことがあります。
-
-<br>
+<b>演出前に結果だけが一瞬表示される</b>ことがあります。
+</div>
 
 > 値としては正しい。しかし、見せるタイミングとしては正しくない。
+
+::right::
+
+<div class="pl-4 pt-6">
+  <video src="/videos/limit_break_demo.mp4" autoplay loop muted playsinline class="rounded-xl border border-white/10 shadow-lg w-full" />
+  <div class="text-xs text-gray-400 mt-2 text-center">※実際の限界突破・ガチャ演出の動画（またはgif/スクショ）に置換想定</div>
+</div>
 
 <!--
 ここからゲーム特有の話に入ります。まずは演出の時間です。
@@ -473,35 +475,37 @@ layout: default
 
 <br>
 
-<div class="grid grid-cols-2 gap-6">
+<div class="grid grid-cols-2 gap-4">
 
-<div class="p-4 border border-red-500/30 rounded-xl bg-red-500/5">
+<div class="p-3 border border-red-500/30 rounded-xl bg-red-500/5">
 
-## 探索中のプレイヤー
+<h2 class="text-base font-bold text-red-300">探索中のプレイヤー</h2>
 
-```text
-PlayerActorが動く
-      ↓
-Transformが変わる
-      ↓
-ゲーム状態が変わる
-```
+<div class="text-xs text-gray-300 my-1">
+PlayerActor移動 → Transform変化 → ゲーム状態更新
+</div>
 
-Simulation Actor と見る方が自然。
+<img src="/images/player_exploration.png" class="rounded-lg border border-red-500/20 shadow my-2 w-full h-36 object-cover" alt="Simulation Actor Placeholder" />
+
+<div class="text-xs text-red-200 font-semibold">
+▶ Simulation Actor と見る方が自然（状態の「原因」）
+</div>
 
 </div>
 
-<div class="p-4 border border-emerald-500/30 rounded-xl bg-emerald-500/5">
+<div class="p-3 border border-emerald-500/30 rounded-xl bg-emerald-500/5">
 
-## ターン制バトルの演出
+<h2 class="text-base font-bold text-emerald-300">ターン制バトルの演出</h2>
 
-```text
-Battle Modelが結果を決める
-      ↓
-3Dキャラが攻撃を演出する
-```
+<div class="text-xs text-gray-300 my-1">
+Battle Model決定 → 3Dキャラが攻撃・被ダメージ演出
+</div>
 
-Viewとして扱いやすい。
+<img src="/images/battle_presentation.png" class="rounded-lg border border-emerald-500/20 shadow my-2 w-full h-36 object-cover" alt="View Placeholder" />
+
+<div class="text-xs text-emerald-200 font-semibold">
+▶ View として扱いやすい（状態の「結果」）
+</div>
 
 </div>
 
@@ -545,14 +549,12 @@ class: text-center
 -->
 
 ---
-layout: default
+layout: two-cols
 ---
 
 # クエスト到達条件で境界が見える
 
-仕様：神殿の入口から一定距離内に到達したらクエスト進行。
-
-<br>
+仕様：神殿の入口から一定距離内に到達したら進行。
 
 ```text
 Observation / Simulation
@@ -567,10 +569,16 @@ Quest / Model側の解釈
 Quest condition satisfied
 ```
 
-<br>
+<div class="text-xs opacity-85 mt-2">
+Quest側は「到達したら進行する」ルールを扱えるが、TransformやColliderを自前で観測するわけではない。
+</div>
 
-Quest側は「到達したら進行する」というルールを扱えます。<br>
-しかし、TransformやColliderを自前で観測するわけではありません。
+::right::
+
+<div class="pl-4 pt-6">
+  <img src="/images/quest_area_trigger.png" class="rounded-xl border border-white/10 shadow-lg w-full" alt="Quest Area Trigger Placeholder" />
+  <div class="text-xs text-gray-400 mt-2 text-center">※Unity SceneビューのTriggerギズモ＋達成通知スクショに置換想定</div>
+</div>
 
 <!--
 この境界が分かりやすく出るのが、地点到達型のクエストです。
