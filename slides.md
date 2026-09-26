@@ -48,7 +48,7 @@ class: text-center
 layout: default
 ---
 
-# 今日の結論
+# 今日の見取り図
 
 <br>
 
@@ -66,17 +66,24 @@ Viewを、その状態の投影として扱える
 
 <br>
 
-ゲームでは、この前提が崩れやすい場面があります。
+今日は、この前提がゲームでどこから崩れるのかを見ます。
 
-- Modelの「今」と、Presentationの「今」が一致しない
-- 画面に出ているオブジェクト自身が、ゲーム状態を変えている
+<br>
+
+```text
+Presentationの状態
+Simulationの状態
+Domain / Applicationの状態
+```
 
 <!--
+今日の見取り図です。
+
 MVVMがきれいに働くのは、Presentationの論理状態をViewModelに置いて、Viewをその投影として扱えるときです。
 
-「今どのタブを選んでいるか」「HPが危険域か」といった状態をViewModelに置き、Viewはそれをどう見せるかだけを担当する。これは素直です。
+ゲームで難しいのは、この前提が崩れる場面があることです。
 
-ゲームで難しいのは、この前提が壊れる場面が多いことです。
+ただし、最初から結論を全部言い切るより、まずはViewModelをPresentation Stateのモデルとして捉え、そのあとでゲーム側の壁を見ます。
 -->
 
 ---
@@ -123,7 +130,7 @@ layout: center
 class: text-center
 ---
 
-# ViewModelは<br><span class="text-red-400">Modelの鏡</span>ではない
+# ViewModelは<br><span class="text-red-400">Modelのコピー</span>ではない
 
 <div class="pt-8 text-xl opacity-80">
 ViewModelは、Presentationの状態モデルである
@@ -131,76 +138,10 @@ ViewModelは、Presentationの状態モデルである
 
 <!--
 ここでまず、一つ目のキーワードです。
-ViewModelはModelの鏡ではありません。
+ViewModelはModelのコピーではありません。
 
-Modelの値をただ横流しするだけなら、それはViewModelというより単なるコピーです。
+Modelの値をただ横流しするだけなら、それはViewModelというよりDTOに近くなります。
 今日の話では、ViewModelをPresentationの状態モデルとして捉えます。
--->
-
----
-layout: default
----
-
-# ViewModelは「変更通知するオブジェクト」なのか？
-
-ステータス画面のように、初期化時点で表示が決まる画面を考えます。
-
-<br>
-
-<div class="grid grid-cols-2 gap-6">
-
-<div class="p-4 border border-emerald-500/30 rounded-xl bg-emerald-500/5">
-
-## immutableなVM
-
-```csharp
-readonly record struct StatusVm(
-    int CurrentHp,
-    int MaxHp)
-{
-    public float HpRate =>
-        (float)CurrentHp / MaxHp;
-}
-```
-
-</div>
-
-<div class="p-4 border border-blue-500/30 rounded-xl bg-blue-500/5">
-
-## Viewが受け取って反映
-
-```csharp
-void Initialize(StatusVm vm)
-{
-    hpText.text =
-        $"{vm.CurrentHp}/{vm.MaxHp}";
-
-    hpGauge.fillAmount = vm.HpRate;
-}
-```
-
-</div>
-
-</div>
-
-<br>
-
-<div class="p-4 border border-amber-500/40 rounded-xl bg-amber-500/10">
-
-**「変わらない状態」をReactiveにする必要はない。**
-
-</div>
-
-<!--
-ViewModelというと、ReactivePropertyを持っていて、ViewがSubscribeする形を想像しがちです。
-
-でもそれは実装方式の一つです。
-
-ステータス画面のように、開いた瞬間に表示内容が決まり、その後ユーザー操作で変化しない画面なら、ViewModelはreadonlyな値型でも構いません。
-
-私はこれもMVVM的に捉えます。なぜなら、その画面にとって意味のあるPresentation状態をViewModelとして切り出し、Viewがそれを具体的な表示にしているからです。
-
-ただし、ここで宗派戦争をしたいわけではありません。大事なのは、MVVMを自動同期技術ではなく、Presentation Stateのモデル化として捉えることです。
 -->
 
 ---
@@ -269,6 +210,72 @@ ViewModelがPresentationの論理状態を持ち、Viewはそれを具体的に�
 この範囲ではMVVMはかなり気持ちよく使えます。
 
 ここから、ゲームで壁に当たる例を見ていきます。
+-->
+
+---
+layout: default
+---
+
+# 補足：ViewModelは「変更通知するオブジェクト」なのか？
+
+ステータス画面のように、初期化時点で表示が決まる画面を考えます。
+
+<br>
+
+<div class="grid grid-cols-2 gap-6">
+
+<div class="p-4 border border-emerald-500/30 rounded-xl bg-emerald-500/5">
+
+## immutableなVM
+
+```csharp
+readonly record struct StatusVm(
+    int CurrentHp,
+    int MaxHp)
+{
+    public float HpRate =>
+        (float)CurrentHp / MaxHp;
+}
+```
+
+</div>
+
+<div class="p-4 border border-blue-500/30 rounded-xl bg-blue-500/5">
+
+## Viewが受け取って反映
+
+```csharp
+void Initialize(StatusVm vm)
+{
+    hpText.text =
+        $"{vm.CurrentHp}/{vm.MaxHp}";
+
+    hpGauge.fillAmount = vm.HpRate;
+}
+```
+
+</div>
+
+</div>
+
+<br>
+
+<div class="p-4 border border-amber-500/40 rounded-xl bg-amber-500/10">
+
+**「変わらない状態」をReactiveにする必要はない。**
+
+</div>
+
+<!--
+ViewModelというと、ReactivePropertyを持っていて、ViewがSubscribeする形を想像しがちです。
+
+でもそれは実装方式の一つです。
+
+ステータス画面のように、開いた瞬間に表示内容が決まり、その後ユーザー操作で変化しない画面なら、ViewModelはreadonlyな値型でも構いません。
+
+私はこれもMVVM的に捉えます。なぜなら、その画面にとって意味のあるPresentation状態をViewModelとして切り出し、Viewがそれを具体的な表示にしているからです。
+
+ただし、ここで宗派戦争をしたいわけではありません。大事なのは、MVVMを自動同期技術ではなく、Presentation Stateのモデル化として捉えることです。
 -->
 
 ---
@@ -377,17 +384,21 @@ layout: center
 class: text-center
 ---
 
-# ViewModelは<br><span class="text-red-400">ライブミラー</span>ではない
+# ViewModelは<br><span class="text-red-400">Modelの最新値</span>ではない
 
 <div class="pt-8 text-xl opacity-80">
 今ユーザーに提示している状態を表す
 </div>
 
 <!--
-ここでさきほどの言葉に戻ります。
+ここで前半の話に戻ります。
 
-ViewModelはModelのライブミラーではありません。
+ViewModelはModelのコピーではありません。
+そして、時間的にもModelの最新値である必要はありません。
+
 ViewModelは、今ユーザーに何を提示しているかを表します。
+
+Domain / Modelではもう3凸でも、Presentationではまだ2凸として提示しているなら、その瞬間のViewModelは2凸を表していてよい、ということです。
 -->
 
 ---
@@ -537,57 +548,6 @@ class: text-center
 layout: default
 ---
 
-# ここで抽象化する：ゲームには複数の状態空間がある
-
-「ModelかViewか」だけでは、ゲームを説明しきれません。
-
-<br>
-
-```text
-Domain / Application State
-  所持金、アイテム、キャラの凸段階、クエスト進行
-
-World Simulation State
-  Transform、Velocity、Collider、接地状態、移動入力
-
-Presentation State
-  選択中タブ、表示中の値、演出フェーズ、カメラ、フェード
-```
-
-<br>
-
-これらはすべて「状態」ですが、<br>
-**意味・寿命・更新タイミング・authority が違います。**
-
-<!--
-ここまでの二つの例をまとめると、ゲームをModelとViewの二つだけで考えるのが苦しい理由が見えてきます。
-
-少なくとも、永続的なゲームルールやアプリケーション状態、毎フレーム動くWorld Simulation、そしてユーザーにどう見せるかというPresentationがあります。
-
-これらは全部状態ですが、同じ種類の状態ではありません。
-寿命も更新頻度も、誰が正とするかも違います。
--->
-
----
-layout: center
-class: text-center
----
-
-# ゲームには<br><span class="text-amber-400">「現在」</span>が複数ある
-
-<!--
-今回の話をさらに一言でまとめるなら、ゲームには現在が複数ある、です。
-
-Domain上の現在、Simulation上の現在、Presentation上の現在。
-
-この三つが常に一致しているとは限りません。
-そして、それぞれが違う意味で正しいことがあります。
--->
-
----
-layout: default
----
-
 # クエスト到達条件で境界が見える
 
 仕様：神殿の入口から一定距離内に到達したらクエスト進行。
@@ -647,6 +607,57 @@ Quest Domainが欲しいのは、TempleEntranceに到達した、という意味
 layout: default
 ---
 
+# ここで抽象化する：ゲームには複数の状態空間がある
+
+「ModelかViewか」だけでは、ゲームを説明しきれません。
+
+<br>
+
+```text
+Domain / Application State
+  所持金、アイテム、キャラの凸段階、クエスト進行
+
+World Simulation State
+  Transform、Velocity、Collider、接地状態、移動入力
+
+Presentation State
+  選択中タブ、表示中の値、演出フェーズ、カメラ、フェード
+```
+
+<br>
+
+これらはすべて「状態」ですが、<br>
+**意味・寿命・更新タイミング・authority が違います。**
+
+<!--
+ここまでの例をまとめると、ゲームをModelとViewの二つだけで考えるのが苦しい理由が見えてきます。
+
+少なくとも、永続的なゲームルールやアプリケーション状態、毎フレーム動くWorld Simulation、そしてユーザーにどう見せるかというPresentationがあります。
+
+これらは全部状態ですが、同じ種類の状態ではありません。
+寿命も更新頻度も、誰が正とするかも違います。
+-->
+
+---
+layout: center
+class: text-center
+---
+
+# ゲームには<br><span class="text-amber-400">「現在」</span>が複数ある
+
+<!--
+今回の話をさらに一言でまとめるなら、ゲームには現在が複数ある、です。
+
+Domain上の現在、Simulation上の現在、Presentation上の現在。
+
+この三つが常に一致しているとは限りません。
+そして、それぞれが違う意味で正しいことがあります。
+-->
+
+---
+layout: default
+---
+
 # では、MVVMはどこで使うのか
 
 <br>
@@ -692,7 +703,7 @@ Presentation StateをViewModelに置けるところでは普通に使えばい�
 layout: default
 ---
 
-# まとめ：一番短い答え
+# 実務上の判断基準
 
 <br>
 
@@ -711,7 +722,7 @@ layout: default
 - MVVMは、ViewをViewModelの投影として扱える範囲で使うと強い
 
 <!--
-最後にまとめます。
+実務上の判断基準としてまとめます。
 
 MVVMが向いているのは、Presentation StateをViewModelとして表し、Viewをその投影として扱える問題です。
 
