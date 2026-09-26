@@ -6,7 +6,8 @@
   "scripts": {
     "dev": "slidev --open",
     "build": "slidev build",
-    "export": "slidev export"
+    "export": "slidev export",
+    "prepare": "git config core.hooksPath .githooks"
   },
   "dependencies": {
     "@slidev/cli": "^53.0.0",
