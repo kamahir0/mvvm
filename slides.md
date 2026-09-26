@@ -119,6 +119,77 @@ HPの例なら、Domain上の23/100という値から、Presentation上は0.23�
 layout: default
 ---
 
+# ImmutableなViewModelでもいい
+
+ViewModelは、必ずしも「変化通知を持つmutableなオブジェクト」である必要はありません。
+
+<br>
+
+<div class="grid grid-cols-2 gap-6">
+
+<div class="p-4 border border-emerald-500/30 rounded-xl bg-emerald-500/5">
+
+## 一回だけ描画する画面
+
+```csharp
+readonly record struct StatusVm(
+    int CurrentHp,
+    int MaxHp)
+{
+    public float HpRate =>
+        (float)CurrentHp / MaxHp;
+}
+```
+
+</div>
+
+<div class="p-4 border border-blue-500/30 rounded-xl bg-blue-500/5">
+
+## Viewが受け取って反映する
+
+```csharp
+void Initialize(StatusVm vm)
+{
+    hpText.text = $"{vm.CurrentHp}/{vm.MaxHp}";
+    hpGauge.fillAmount = vm.HpRate;
+}
+
+void UpdateView(StatusVm vm)
+{
+    Apply(vm);
+}
+```
+
+</div>
+
+</div>
+
+<br>
+
+Data Bindingは接続方法の一つです。  
+**immutableなVMを `Initialize` / `UpdateView` で渡す作りでも、Presentation状態をモデル化していればMVVM的に扱えます。**
+
+<!--
+ここは少し独立して言っておきたいところです。
+
+ViewModelというと、ReactivePropertyを持っていて、ViewがそれをSubscribeして、値が変わるたびに自動反映される、という形を想像しがちです。
+
+でも、それはViewModelの実装方式の一つに過ぎません。
+
+例えばキャラクターのステータス画面のように、開いた瞬間に表示内容が決まり、ユーザー操作で変化しない画面なら、ViewModelはreadonlyな値型やrecord structでも構いません。
+
+ViewはInitializeでその値を受け取って、自分のTextやGaugeへ反映する。
+必要なら更新のたびに新しいimmutable VMをUpdateViewで受け取る。
+
+この場合も、CurrentHpとMaxHpからHpRateを導出しているなら、その画面にとって意味のあるPresentation状態をモデル化しています。
+
+つまり、MVVMかどうかをData Bindingの有無で判断するのではなく、「Viewが使う論理状態がViewModelとして切り出されているか」で見る、ということです。
+-->
+
+---
+layout: default
+---
+
 # Presentationにしかない状態
 
 例：パーティーステータス画面。
