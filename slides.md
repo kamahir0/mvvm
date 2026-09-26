@@ -305,7 +305,7 @@ Modelの更新をViewModelへ即時反映すると、<br>
 ::right::
 
 <div class="pl-4 pt-6">
-  <video src="/videos/limit_break_demo.mp4" autoplay loop muted playsinline class="rounded-xl border border-white/10 shadow-lg w-full" />
+  <video src="/videos/limit_break_demo.mov" autoplay loop muted playsinline class="rounded-xl border border-white/10 shadow-lg w-full" />
   <div class="text-xs text-gray-400 mt-2 text-center">※実際の限界突破・ガチャ演出の動画（またはgif/スクショ）に置換想定</div>
 </div>
 
