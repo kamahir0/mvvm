@@ -293,7 +293,7 @@ layout: default
 
 <div>
 
-例：ソーシャルRPGの限界突破演出。
+例：ソシャゲの限界突破演出。
 
 ```text
 ユーザーが「限界突破」ボタンを押す
@@ -316,7 +316,7 @@ Modelの更新をViewModelへ即時反映すると、<br>
 
 <div>
   <video src="/videos/limit_break_demo.mov" autoplay loop muted playsinline class="rounded-xl border border-white/10 shadow-lg w-full" />
-  <div class="text-xs text-gray-400 mt-2 text-center">※実際の限界突破・ガチャ演出の動画（またはgif/スクショ）に置換想定</div>
+  <div class="text-xs text-gray-400 mt-2 text-center">※画面右側に注目</div>
 </div>
 
 </div>
