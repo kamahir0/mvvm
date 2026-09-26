@@ -4,7 +4,7 @@ background: https://cover.sli.dev
 title: MVVMはなぜゲームに向かないと言われがちなのか
 info: |
   ## MVVMはなぜゲームに向かないと言われがちなのか
-  〜ソシャゲの凸演出ネタバレから読み解くアーキテクチャの境界線〜
+  〜 凸演出の自爆と「3つの世界」から読み解くアーキテクチャの限界 〜
 class: text-center
 drawings:
   persist: false
@@ -14,7 +14,7 @@ mdc: true
 
 # MVVMはなぜゲームに<br><span class="text-red-400">向かない</span>と言われがちなのか？
 
-〜 ソシャゲの「凸演出ネタバレ」から読み解くアーキテクチャの境界線 〜
+〜 凸演出の自爆と「3つの世界」から読み解くアーキテクチャの限界 〜
 
 <div class="pt-8 text-sm opacity-60">
   5分LT / 矢印キーでめくってください
@@ -24,15 +24,15 @@ mdc: true
 layout: default
 ---
 
-# あるある：ソシャゲの「限界突破（凸）」
+# 掴み：ソシャゲの「凸演出ネタバレ」
 
-キャラクターを凸るとき、最近のゲームは豪華な演出が入りますよね。
+キャラクターを「凸（限界突破）」した瞬間の、あの現象。
 
 <br>
 
 <div class="p-6 border border-amber-500/40 rounded-xl bg-amber-500/10">
 
-### 📱 こんな現象、見かけたことありませんか？
+### 📱 こんな光景、見覚えありませんか？
 
 「凸する」ボタンを押した瞬間……<br>
 画面が暗転フェードする前の**ほんの1フレーム**だけ、<br>
@@ -43,7 +43,7 @@ layout: default
 <br>
 <v-click>
 
-> 🚨 **実はこれこそが、MVVMとゲーム演出の衝突を象徴する決定的瞬間です。**
+> 🚨 **実はこれ、「MVVMの教科書」を真面目に守りすぎた結果起きる自爆なんです。**
 
 </v-click>
 
@@ -51,9 +51,9 @@ layout: default
 layout: default
 ---
 
-# なぜあの「ネタバレ」が起きるのか？
+# なぜあの「自爆」が起きるのか？
 
-MVVMが**「真面目に正しく働きすぎた」**結果です。
+MVVMが**「真面目に正しく働きすぎた」**からです。
 
 ```mermaid
 sequenceDiagram
@@ -61,7 +61,7 @@ sequenceDiagram
     actor Player as プレイヤー
     participant View as View (UI画面)
     participant VM as ViewModel
-    participant Model as Model (データ)
+    participant Model as Model (データ層)
     participant Director as 演出システム
 
     Player->>View: 「凸」ボタン押下
@@ -70,108 +70,125 @@ sequenceDiagram
 
     rect rgb(255, 200, 200)
     Note over VM,View: 🚨 MVVMの自動バインディングが即時発火！
-    VM-->>View: LimitBreakLevel = 1 (通知)
-    View->>View: フェード前に★が★4に切り替わる！ (ネタバレ)
+    VM-->>View: LimitBreakLevel = 1 (自動通知)
+    View->>View: 暗転前に★が★4に切り替わる！ (ネタバレ)
     end
 
     View->>Director: 画面フェードアウト開始...
     Director->>Director: 豪華な昇格ムービー再生...
 ```
 
-- **MVVMの思想**：「データが変わったら、1ミリの遅れもなく即座に画面へ反映する」
-- **ゲームの要件**：「いや、暗転してムービーがドカーンと光るまで画面は変えないで！」
-
----
-layout: two-cols
----
-
-# そもそもViewModelとは何か？
-
-MVVMは、実はレイヤーの断絶を跨いでいます。
-
-$$ \underbrace{\text{Model}}_{\text{ドメイン層}} \quad \Bigg| \quad \underbrace{\text{ViewModel} \longleftrightarrow \text{View}}_{\text{プレゼンテーション層}} $$
-
-### ViewModelの本質
-プレゼンテーション層という閉じたスコープにおいて、<br>
-**画面が論理的に取りうる状態を正規化した「カノニカル（正準形式）」**。
-
-Viewのピクセル都合（色や座標）を剥ぎ取り、<br>
-**「状態」** と **「導出ルール（ロジック）」** だけをモデル化したもの。
-
-::right::
-
-<div class="pl-4 pt-6">
-
-#### 例：パーティ画面のL/Rタブ切り替え
-- **「いま何人目のキャラを見ているか」**
-  - Modelには存在しない（UI都合の情報）
-  - **プレゼンテーション層固有のカノニカルな状態！**
-- **導出ロジック**:
-  - `CanPrev`（先頭ならLボタン無効）
-  - `CanNext`（末尾ならRボタン無効）
-
-<div class="mt-4 p-3 bg-blue-500/10 border border-blue-500/30 rounded text-xs">
-  💡 画面が「カノニカルな論理状態」だけで100%説明できるドメインなら、MVVMは最高に輝く！
-</div>
-
-</div>
+- **MVVMの教条**：「データが変わったら、1ミリの遅れもなく即座に画面へ反映する」
+- **ゲームの要件**：「いや、暗転してムービーが光る瞬間まで画面は変えないで！」
 
 ---
 layout: default
 ---
 
-# 静的な画面なら「動的通知」すら要らない
+# 現場の苦渋の決断と、最大の「皮肉」
 
-「MVVM＝変更通知（ReactiveProperty）」と思い込みがちですが……
+現場のエンジニアはどうやってこれを解決するでしょうか？
 
 <br>
 
-<div class="grid grid-cols-2 gap-6">
+<div class="p-4 border border-red-500/30 rounded-lg bg-red-500/10 font-mono text-xs">
+// Model ➔ ViewModel の自動バインディングを【あえて解除】する<br>
+var result = await useCase.LimitBreakAsync();<br>
+await view.PlayCutsceneAsync(); // 演出ムービーが終わるのを待って...<br>
+<span class="text-yellow-300 font-bold">viewModel.Apply(result);</span> // ➔ ★ここで手動で同期する！
+</div>
 
-<div class="p-4 border border-gray-600 rounded-lg">
-  <div class="font-bold mb-2">📋 開いて見るだけのステータス画面</div>
-  <ul class="text-sm space-y-1">
-    <li>一度開いたら操作で値が変わらない</li>
-    <li>必要なのは「HP現在値」「最大値」「割合」</li>
-  </ul>
-  <div class="mt-3 text-emerald-400 font-bold text-sm">
-    ➔ イミュータブルな <code>struct</code> で十分！
+<br>
+
+<v-click>
+
+### 💡 ここに最大の「皮肉（パラドックス）」がある！
+- **ゲーム演出を成立させるために、MVVMの売り（自動同期）を自らの手で殺している**
+- 「MVVMのルールを守ると演出が壊れ、演出を守るとMVVMが壊れる」
+
+> 😭 **「あれ……これ本当にMVVMやってる意味ある……？」** という虚無感こそが、<br>
+> 「ゲームにMVVMは向かない」と言いたくなる最大の正体！
+
+</v-click>
+
+---
+layout: default
+---
+
+# 根本原因：GUIアプリとゲームの「世界の数」
+
+なぜこんな衝突が起きるのか？ それは**住んでいる「世界の数」が違うから**です。
+
+<br>
+
+<div class="grid grid-cols-2 gap-8 pt-2">
+
+<div class="p-4 border border-blue-500/30 rounded-xl bg-blue-500/5">
+  <h3 class="font-bold text-blue-400 mb-2">📱 Web / GUIアプリ（二世界）</h3>
+  <div class="text-center font-mono text-sm py-2 bg-gray-900 rounded mb-2">
+    Domain ➔ Presentation
   </div>
+  <ul class="text-xs space-y-2 text-gray-300">
+    <li>状態（State）さえ決まれば画面は一意に決まる</li>
+    <li>状態の間の「遷移時間」はゼロが理想（ただのラグ）</li>
+    <li><b>MVVMはこの「二世界」のために生まれた！</b></li>
+  </ul>
 </div>
 
-<div class="p-4 bg-gray-900 rounded-lg font-mono text-xs">
-<span class="text-gray-500">// これも立派な「Viewのためのモデル」</span><br>
-public readonly struct StatusViewState<br>
-{<br>
-&nbsp;&nbsp;public readonly int CurrentHp;<br>
-&nbsp;&nbsp;public readonly int MaxHp;<br>
-&nbsp;&nbsp;public float Ratio => (float)CurrentHp / MaxHp;<br>
-&nbsp;&nbsp;public bool IsDanger => Ratio <= 0.2f;<br>
-}<br><br>
-<span class="text-blue-400">view.Initialize(state);</span> <span class="text-gray-500">// 渡すだけで完了！</span>
+<div class="p-4 border border-amber-500/30 rounded-xl bg-amber-500/5">
+  <h3 class="font-bold text-amber-400 mb-2">🎮 ゲーム（三世界！）</h3>
+  <div class="text-center font-mono text-xs py-2 bg-gray-900 rounded mb-2 text-amber-300">
+    Domain ➔ <span class="text-red-400 font-bold">Simulation</span> ➔ Presentation
+  </div>
+  <ul class="text-xs space-y-2 text-gray-300">
+    <li>物理、座標、AI、アニメーション…</li>
+    <li><b>毎フレーム時間発展する巨大なシミュレーション</b>が間に居座っている！</li>
+  </ul>
 </div>
 
 </div>
-
-<br>
-
-> 💡 **変化しない画面に通知機構を載せるのは過剰設計。**<br>
-> 教条主義にとらわれず、動的な通知を削ぎ落とすのもゲーム開発で重要な知恵。
 
 ---
 layout: default
 ---
 
-# では、なぜゲームで破綻するのか？
+# ゲームに君臨する「3つの世界」
 
-ズバリ、本質はここにあります。
+ゲームのアーキテクチャは、本質的にこの3層で動いています。
 
 <br>
 
-<div class="p-6 border-2 border-red-500/50 rounded-xl bg-red-500/10 text-center">
-  <div class="text-2xl font-bold text-red-400 mb-2">
-    MVVMは「状態（State）」の道具だが、<br>
-    ゲームの本質は「状態と状態の間にある時間（過渡演出）」だから。
+```text
+【1. Persistent Domain】（永続的なゲームルール）
+    所持金、アイテム、キャラの凸段階、クエスト進行フラグ
+              │
+              ▼ 意味の伝播
+【2. World Simulation】（毎フレーム時間発展する物理世界）★ゲーム特有！
+    Transform、Rigidbody、コライダー、アニメーション遷移、移動入力
+              │
+              ▼ 提示の同期
+【3. Presentation】（提示と演出の世界）
+    カメラ演出、カットシーン、SE再生、uGUI、画面フェード
+```
+
+<br>
+
+> 🚨 **ゲームの主役は、DomainとPresentationの間で蠢く「World Simulation」である！**
+
+---
+layout: default
+---
+
+# なぜゲームでMVVMが破綻するのか？
+
+結論は極めてシンプルです。
+
+<br>
+
+<div class="p-5 border-2 border-red-500/50 rounded-xl bg-red-500/10 text-center">
+  <div class="text-xl font-bold text-red-400 mb-2">
+    「World Simulation」という第3の世界を、<br>
+    MVVMという「二世界用の枠組み」に無理やり押し込めようとするから！
   </div>
 </div>
 
@@ -180,20 +197,18 @@ layout: default
 <div class="grid grid-cols-2 gap-6 pt-2">
 
 <div>
-  <h4 class="font-bold text-blue-400 mb-1">📱 一般的なUI（アプリ・Web）</h4>
-  <p class="text-xs text-gray-300">状態の投影（\(View = f(State)\)）</p>
-  <ul class="text-xs space-y-1 mt-2">
-    <li>状態（State）さえ決まれば画面は一意に決まる</li>
-    <li>状態間の「遷移時間」はゼロが理想（ただのラグ）</li>
+  <h4 class="font-bold text-red-300 mb-1">❌ View扱いした場合</h4>
+  <p class="text-xs text-gray-300">「歩くプレイヤー＝PlayerView」</p>
+  <ul class="text-xs space-y-1 mt-1 text-gray-400">
+    <li>受動的な描画のはずのViewが、物理演算や当たり判定の重責を抱え込んで<b>巨大化・爆死（Fat View）</b></li>
   </ul>
 </div>
 
 <div>
-  <h4 class="font-bold text-orange-400 mb-1">🎮 ゲーム（特にインゲーム・演出）</h4>
-  <p class="text-xs text-gray-300">時間軸とシーケンスのシミュレーション</p>
-  <ul class="text-xs space-y-1 mt-2">
-    <li>被弾 ➔ 揺れ ➔ 倒れモーション ➔ 爆発SE待ち</li>
-    <li><b>「過渡現象（演出）」が終わるまで次の処理を待つ！</b></li>
+  <h4 class="font-bold text-red-300 mb-1">❌ Model扱いした場合</h4>
+  <p class="text-xs text-gray-300">「MonoBehaviourなPlayerModel」</p>
+  <ul class="text-xs space-y-1 mt-1 text-gray-400">
+    <li>純粋なはずのドメインモデルに、Unityの座標やUpdateが混ざり合い、<b>テスト・同期が壊滅</b></li>
   </ul>
 </div>
 
@@ -203,58 +218,31 @@ layout: default
 layout: default
 ---
 
-# 失敗の原因：「一本の土管」で直結してしまうこと
+# 例：「Domainは判定できるが、観測できない」
 
-多くの現場でMVVMが爆死するのは、以下のように繋いでしまうからです。
-
-<br>
-
-<div class="text-center font-mono text-lg p-3 bg-red-950/40 border border-red-600/50 rounded-lg">
-  Model ➔ <span class="text-red-400">【自動同期】</span> ➔ ViewModel ➔ <span class="text-red-400">【自動同期】</span> ➔ View
-</div>
+クエスト「特定地点に到達したら進行」で直面する壁。
 
 <br>
 
-<div class="text-base space-y-3">
-
-- 通信完了やHP変動と同時に、画面の数字がノータイムで書き換わる
-- ゲームが求めているのは、**「演出のタイムラインに応じたタイミング制御」**
-- 自動同期の一本道に演出をねじ込もうとすると……
-  - ViewModelに演出都合のフラグ（`IsWaitingEffect` 等）が増えて汚染される
-  - あるいはViewとViewModelの間で時間のズレが起きてバグる
-
-</div>
-
----
-layout: default
----
-
-# 解決策：同期のタイミングを「演出フロー」に委ねる
-
-Model ➔ ViewModel の直接同期を切り離し、**async/await** で制御する！
-
-```csharp {all|5-6|8-10|11-13|all}
-public async UniTask OnLimitBreakClicked()
-{
-    view.SetInteractable(false); // ① UIロック
-
-    // ② 通信実行（※この時点ではまだViewModelは更新しない！）
-    LimitBreakResult result = await _limitBreakUseCase.ExecuteAsync();
-
-    // ③ 暗転フェード ＆ 演出ムービー再生
-    await _view.FadeOutAsync();
-    await _cutscenePlayer.PlayCutsceneAsync();
-
-    // ④ 【★演出が終わった瞬間に、ローカル変数のデータでViewModelを更新★】
-    _viewModel.UpdateLimitBreak(result.NewLevel); // ➔ ここで初めてViewの★が増える！
-
-    await _view.FadeInAsync();   // ⑤ フェードを戻す
-    view.SetInteractable(true);  // ⑥ ロック解除
-}
+```text
+1. Observation（観測 / Simulation層）
+   Transform.position = (127.3, 2.0, -83.5)
+      ↓
+2. Spatial interpretation（空間解釈 / Simulation層）
+   「指定コライダーの内側にいる」
+      ↓ ─── semantic boundary ───
+3. Domain interpretation（ドメイン解釈 / Domain層）
+   「ReachedLocation(AncientGate) という事実が発生した」
 ```
 
-<div class="text-xs text-emerald-400 mt-2">
-  ✨ ViewModel ➔ Viewのバインディング（UI自動更新）の旨味はそのままに、ネタバレを完全防御！
+<br>
+
+<div class="text-sm space-y-1">
+
+- Domainは「到達したら進行」という**ルールを判定**できる
+- しかし、3D空間の幾何学を**自前で観測することはできない**
+- この多層な意味変換を、MVVMの「状態の直接バインディング」では捉えきれない！
+
 </div>
 
 ---
@@ -268,18 +256,18 @@ layout: default
 <div class="space-y-4">
 
 <div class="p-3 border-l-4 border-emerald-400 bg-emerald-500/10">
-  <div class="font-bold text-emerald-300">1. カノニカルだけで説明できる画面は、MVVMをフル活用する</div>
-  <div class="text-sm">メニュー、インベントリ、ショップ等のアウトゲーム。静的な画面ならイミュータブルなstructでOK。</div>
+  <div class="font-bold text-emerald-300">1. 「二世界」で完結する画面は、MVVMをフル活用する</div>
+  <div class="text-sm">メニュー、インベントリ、ショップ等のアウトゲーム。静的な画面ならイミュータブルなstructで十分。</div>
 </div>
 
 <div class="p-3 border-l-4 border-amber-400 bg-amber-500/10">
-  <div class="font-bold text-amber-300">2. 演出という「時間」が挟まるなら、自動バインディングを盲信しない</div>
-  <div class="text-sm">Model ➔ ViewModelの同期タイミングを、async/awaitなどの手続き（シーケンス）に委ねる。</div>
+  <div class="font-bold text-amber-300">2. 演出という「時間」が挟まるなら、自動同期を諦めて手続きで書く</div>
+  <div class="text-sm">Model ➔ ViewModelの同期タイミングを、async/awaitなどの演出シーケンスに委ねる。</div>
 </div>
 
 <div class="p-3 border-l-4 border-red-400 bg-red-500/10">
-  <div class="font-bold text-red-300">3. インゲーム（リアルタイム戦闘）には無理に持ち込まない</div>
-  <div class="text-sm">毎フレーム更新＆時間軸が支配する世界。素直にMVP(Passive View)、ステートマシン、ECSを使おう。</div>
+  <div class="font-bold text-red-300">3. インゲーム（3D空間・戦闘）はMVVMのメガネを外す</div>
+  <div class="text-sm">3Dモデルは「View」でも「Model」でもなく「Actor」。素直にActor/Component指向、ECSを使おう。</div>
 </div>
 
 </div>
@@ -292,8 +280,9 @@ class: text-center
 # まとめ
 
 <div class="text-xl font-bold py-6 leading-relaxed">
-  アプリの主役は「状態」だが、<br>
-  ゲームの主役は<span class="text-amber-400">「時間（演出）」</span>である。<br><br>
+  ゲームでMVVMが難しいのではない。<br>
+  ゲームを<span class="text-red-400">「DomainとPresentationの二世界」</span>だけで<br>
+  捉えようとすることに無理があったのだ。<br><br>
   <span class="text-emerald-400">教条主義を捨て、適材適所で気持ちよくゲームを作ろう！</span>
 </div>
 
