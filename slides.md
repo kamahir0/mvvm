@@ -17,14 +17,14 @@ mdc: true
 ## ViewModelで扱える状態、扱いにくい状態
 
 <div class="pt-8 text-sm opacity-60">
-Domain / Simulation / Presentation の境界から考える
+Model / Simulation / Presentation の境界から考える
 </div>
 
 <!--
 今日は「MVVMはなぜゲームに向かないと言われがちなのか」という話をします。
 
 結論から言うと、MVVMそのものを否定する話ではありません。
-むしろ、MVVMがきれいにハマる場所と、苦しくなる場所を分けて考えたい、という話です。
+むしろ、MVVMがきれいにハマる場所と、苦しくなる場所を、状態の種類から分けて考えたい、という話です。
 -->
 
 ---
@@ -73,7 +73,7 @@ Viewを、その状態の投影として扱える
 ```text
 Presentationの状態
 Simulationの状態
-Domain / Applicationの状態
+Model側の状態
 ```
 
 <!--
@@ -83,7 +83,7 @@ MVVMがきれいに働くのは、Presentationの論理状態をViewModelに置�
 
 ゲームで難しいのは、この前提が崩れる場面があることです。
 
-ただし、最初から結論を全部言い切るより、まずはViewModelをPresentation Stateのモデルとして捉え、そのあとでゲーム側の壁を見ます。
+ただし、最初からSimulationを詳しく説明しすぎると抽象論になります。まずはViewModelを表示上の状態のモデルとして捉え、そのあとでゲーム側の壁を見ます。
 -->
 
 ---
@@ -275,7 +275,7 @@ ViewModelというと、ReactivePropertyを持っていて、ViewがSubscribeす
 
 私はこれもMVVM的に捉えます。なぜなら、その画面にとって意味のあるPresentation状態をViewModelとして切り出し、Viewがそれを具体的な表示にしているからです。
 
-ただし、ここで宗派戦争をしたいわけではありません。大事なのは、MVVMを自動同期技術ではなく、Presentation Stateのモデル化として捉えることです。
+ただし、ここで宗派戦争をしたいわけではありません。大事なのは、MVVMを自動同期技術ではなく、表示上の状態のモデル化として捉えることです。
 -->
 
 ---
@@ -341,7 +341,7 @@ Modelではもう3凸かもしれない。
 layout: default
 ---
 
-# ModelのcommitとPresentationのcommitを分ける
+# Modelの更新と表示への反映タイミングを分ける
 
 View ↔ ViewModel のbindingは維持してよい。<br>
 制御すべきなのは、**Modelの最新状態をいつViewModelへ適用するか**です。
@@ -349,31 +349,31 @@ View ↔ ViewModel のbindingは維持してよい。<br>
 <br>
 
 ```csharp {all|1|3|5|all}
-// Domain / Model 側では、ここで結果が確定する
+// Model側では、ここで結果が確定する
 var result = await useCase.LimitBreakAsync();
 
-// Presentation上は、まだ旧状態を見せたまま演出する
+// 表示上は、まだ旧状態を見せたまま演出する
 await presentation.PlayLimitBreakAsync(result);
 
-// reveal後に、Presentationの現在として適用する
+// reveal後に、表示上の現在として適用する
 viewModel.Apply(result);
 ```
 
 <br>
 
 ```text
-Model time:        API成功 ───────────── 3凸
-Presentation time: 2凸 ── 演出 ── reveal ── 3凸
+Model側の時間:  API成功 ───────────── 3凸
+表示上の時間:    2凸 ── 演出 ── reveal ── 3凸
 ```
 
 <!--
-ここでは、ModelとPresentationでcommitのタイミングを分けます。
+ここでは、Model側の更新と、表示へ反映するタイミングを分けます。
 
 ViewとViewModelのbindingを捨てる必要はありません。
 制御したいのは、Modelの結果をいつViewModelへ反映するかです。
 
-UseCaseが完了して、Domain / Model側では結果が確定します。
-ただしPresentationでは旧状態のまま演出を再生します。
+UseCaseが完了して、Model側では結果が確定します。
+ただし表示上は旧状態のまま演出を再生します。
 結果を見せるrevealポイントに来たら、そこで初めてViewModelへ適用します。
 
 するとViewはいつも通りViewModelに従って3凸表示へ変わる。
@@ -398,7 +398,7 @@ ViewModelはModelのコピーではありません。
 
 ViewModelは、今ユーザーに何を提示しているかを表します。
 
-Domain / Modelではもう3凸でも、Presentationではまだ2凸として提示しているなら、その瞬間のViewModelは2凸を表していてよい、ということです。
+Model側ではもう3凸でも、表示上はまだ2凸として提示しているなら、その瞬間のViewModelは2凸を表していてよい、ということです。
 -->
 
 ---
@@ -459,7 +459,7 @@ Simulation: state(t) + input → state(t+1)
 Viewは、状態から見た目を作るものです。
 しかし探索中のプレイヤーは、状態と入力から次の状態を作っています。
 
-それはViewというより、Simulation Actorと考えた方が責務に合います。
+ここで、こういう「次のゲーム世界の状態を作る責務」を、今日はSimulationと呼ぶことにします。三層アーキテクチャの新しい層を増やしたいというより、Presentationとは違う状態空間がある、という意味です。
 -->
 
 ---
@@ -501,7 +501,7 @@ Battle Modelが結果を決める
 3Dキャラが攻撃を演出する
 ```
 
-Presentation Actor / View として扱いやすい。
+Viewとして扱いやすい。
 
 </div>
 
@@ -516,7 +516,7 @@ Presentation Actor / View として扱いやすい。
 一方、ターン制コマンドバトルなら、Battle Model側で誰が誰に攻撃して何ダメージ、という結果が先に決まっている場合があります。
 その後で3Dキャラが走って、剣を振って、ダメージを演出する。
 
-この場合、3Dキャラクターは決定済みのゲーム状態を見せる側なので、かなりView / Presentation Actorとして扱いやすい。
+この場合、3Dキャラクターは決定済みのゲーム状態を見せる側なので、かなりViewとして扱いやすい。
 -->
 
 ---
@@ -560,8 +560,8 @@ Observation / Simulation
         ↓
 Spatial interpretation / Simulation
   IsInsideArea(TempleEntrance) == true
-        ↓ semantic boundary
-Domain interpretation / Quest
+        ↓ 意味に変換する
+Quest / Model側の解釈
   ReachedLocation(TempleEntrance)
         ↓
 Quest condition satisfied
@@ -569,7 +569,7 @@ Quest condition satisfied
 
 <br>
 
-Domainは「到達したら進行する」というルールを扱えます。<br>
+Quest側は「到達したら進行する」というルールを扱えます。<br>
 しかし、TransformやColliderを自前で観測するわけではありません。
 
 <!--
@@ -578,9 +578,9 @@ Domainは「到達したら進行する」というルールを扱えます。<b
 仕様としては、神殿入口の一定距離内に入ったら進行。
 実際に位置を観測するのはTransformやColliderを持つSimulation側です。
 
-そこでTempleEntranceの範囲内にいる、という空間的な意味に変換し、さらにQuest側ではTempleEntranceに到達した、というドメイン上の事実として扱う。
+そこでTempleEntranceの範囲内にいる、という空間的な意味に変換し、さらにQuest側ではTempleEntranceに到達した、というゲーム上意味のある事実として扱う。
 
-Domainは到達したら進行するというルールを知ることはできます。
+Quest側は到達したら進行するというルールを知ることはできます。
 でも、ColliderやTransformを自分自身で観測する必要はありません。
 -->
 
@@ -591,16 +591,16 @@ class: text-center
 
 # Simulationは世界を観測する
 
-# Domainはそれに意味を与える
+# Model側はそれに意味を与える
 
 <!--
 ここも今回のキーワードです。
 
 Simulationは世界を観測する。
-Domainはそれに意味を与える。
+Model側はそれに意味を与える。
 
-Transform.positionという実装上の値を、そのままQuest Domainへ持っていく必要はありません。
-Quest Domainが欲しいのは、TempleEntranceに到達した、という意味を持った事実です。
+Transform.positionという実装上の値を、そのままQuestのロジックへ持っていく必要はありません。
+Questが欲しいのは、TempleEntranceに到達した、という意味を持った事実です。
 -->
 
 ---
@@ -614,28 +614,28 @@ layout: default
 <br>
 
 ```text
-Domain / Application State
+Model側の状態
   所持金、アイテム、キャラの凸段階、クエスト進行
 
 World Simulation State
   Transform、Velocity、Collider、接地状態、移動入力
 
-Presentation State
+Presentation State（表示上の状態）
   選択中タブ、表示中の値、演出フェーズ、カメラ、フェード
 ```
 
 <br>
 
 これらはすべて「状態」ですが、<br>
-**意味・寿命・更新タイミング・authority が違います。**
+**意味・寿命・更新タイミング・何を正とするかが違います。**
 
 <!--
 ここまでの例をまとめると、ゲームをModelとViewの二つだけで考えるのが苦しい理由が見えてきます。
 
-少なくとも、永続的なゲームルールやアプリケーション状態、毎フレーム動くWorld Simulation、そしてユーザーにどう見せるかというPresentationがあります。
+少なくとも、Model側の状態、毎フレーム動くWorld Simulation、そしてユーザーにどう見せるかというPresentationがあります。
 
 これらは全部状態ですが、同じ種類の状態ではありません。
-寿命も更新頻度も、誰が正とするかも違います。
+寿命も更新頻度も、何を正とするかも違います。
 -->
 
 ---
@@ -648,7 +648,7 @@ class: text-center
 <!--
 今回の話をさらに一言でまとめるなら、ゲームには現在が複数ある、です。
 
-Domain上の現在、Simulation上の現在、Presentation上の現在。
+Model側の現在、Simulation上の現在、Presentation上の現在。
 
 この三つが常に一致しているとは限りません。
 そして、それぞれが違う意味で正しいことがあります。
@@ -709,7 +709,7 @@ layout: default
 
 <div class="p-6 border-2 border-amber-500/50 rounded-xl bg-amber-500/10 text-center my-4">
   <div class="text-xl font-bold leading-relaxed">
-    MVVMが得意なのは、<span class="text-emerald-400">Presentation StateをViewModelで表すこと</span>。<br>
+    MVVMが得意なのは、<span class="text-emerald-400">表示上の状態をViewModelで表すこと</span>。<br>
     ゲームが難しいのは、<span class="text-red-400">表示されているもの自身が状態遷移に参加すること</span>。
   </div>
 </div>
@@ -718,13 +718,13 @@ layout: default
 
 - ViewModelはModelのライブミラーではない
 - 3Dオブジェクトは、ViewではなくSimulation Actorであることがある
-- ゲームでは Domain / Simulation / Presentation の境界を見る必要がある
+- ゲームでは Model / Simulation / Presentation の境界を見る必要がある
 - MVVMは、ViewをViewModelの投影として扱える範囲で使うと強い
 
 <!--
 実務上の判断基準としてまとめます。
 
-MVVMが向いているのは、Presentation StateをViewModelとして表し、Viewをその投影として扱える問題です。
+MVVMが向いているのは、表示上の状態をViewModelとして表し、Viewをその投影として扱える問題です。
 
 一方ゲームでは、ModelとPresentationで時間がズレたり、画面に見えているオブジェクト自身がSimulationの状態遷移に参加したりします。
 
@@ -744,7 +744,7 @@ class: text-center
 かなり短く言うと、MVVMが苦しいのではありません。
 異なる状態空間をひとつに潰すのが苦しい。
 
-PresentationにはPresentationの状態があり、SimulationにはSimulationの状態があり、DomainにはDomainの状態があります。
+PresentationにはPresentationの状態があり、SimulationにはSimulationの状態があり、Model側にはModel側の状態があります。
 
 それぞれを分けて考えると、MVVMを使える場所と、別の設計が必要な場所が見えてきます。
 -->
