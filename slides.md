@@ -145,10 +145,14 @@ Modelの値をただ横流しするだけなら、それはViewModelというよ
 -->
 
 ---
-layout: two-cols
+layout: default
 ---
 
 # Presentationにしかない状態
+
+<div class="grid grid-cols-2 gap-6 items-center">
+
+<div>
 
 例：パーティーステータス画面。
 
@@ -172,11 +176,13 @@ View
 
 </div>
 
-::right::
+</div>
 
-<div class="pl-4 pt-4">
+<div>
   <img src="/images/party_status_tabs.png" class="rounded-xl border border-white/10 shadow-lg w-full" alt="Party Status UI Placeholder" />
   <div class="text-xs text-gray-400 mt-2 text-center">※実際のゲームステータス画面・タブ選択スクショに置換想定</div>
+</div>
+
 </div>
 
 <!--
@@ -278,10 +284,14 @@ ViewModelというと、ReactivePropertyを持っていて、ViewがSubscribeす
 -->
 
 ---
-layout: two-cols
+layout: default
 ---
 
 # 壁1：正しい値なのに、表示するとバグになる
+
+<div class="grid grid-cols-2 gap-6 items-center">
+
+<div>
 
 例：ソーシャルRPGの限界突破演出。
 
@@ -302,11 +312,13 @@ Modelの更新をViewModelへ即時反映すると、<br>
 
 > 値としては正しい。しかし、見せるタイミングとしては正しくない。
 
-::right::
+</div>
 
-<div class="pl-4 pt-6">
+<div>
   <video src="/videos/limit_break_demo.mov" autoplay loop muted playsinline class="rounded-xl border border-white/10 shadow-lg w-full" />
   <div class="text-xs text-gray-400 mt-2 text-center">※実際の限界突破・ガチャ演出の動画（またはgif/スクショ）に置換想定</div>
+</div>
+
 </div>
 
 <!--
@@ -549,10 +561,14 @@ class: text-center
 -->
 
 ---
-layout: two-cols
+layout: default
 ---
 
 # クエスト到達条件で境界が見える
+
+<div class="grid grid-cols-2 gap-6 items-center">
+
+<div>
 
 仕様：神殿の入口から一定距離内に到達したら進行。
 
@@ -573,11 +589,13 @@ Quest condition satisfied
 Quest側は「到達したら進行する」ルールを扱えるが、TransformやColliderを自前で観測するわけではない。
 </div>
 
-::right::
+</div>
 
-<div class="pl-4 pt-6">
+<div>
   <img src="/images/quest_area_trigger.png" class="rounded-xl border border-white/10 shadow-lg w-full" alt="Quest Area Trigger Placeholder" />
   <div class="text-xs text-gray-400 mt-2 text-center">※Unity SceneビューのTriggerギズモ＋達成通知スクショに置換想定</div>
+</div>
+
 </div>
 
 <!--
