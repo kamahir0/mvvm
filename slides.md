@@ -572,17 +572,17 @@ layout: default
 
 <div>
 
-仕様：神殿の入口から一定距離内に到達したら進行。
+仕様：クエストNPCから一定距離内に到達したら進行。
 
 ```text
 Observation / Simulation
   Transform.position = (127.3, 2.0, -83.5)
         ↓
 Spatial interpretation / Simulation
-  IsInsideArea(TempleEntrance) == true
+  IsInsideArea(QuestNpc) == true
         ↓ 意味に変換する
 Quest / Model側の解釈
-  ReachedLocation(TempleEntrance)
+  ReachedLocation(QuestNpc)
         ↓
 Quest condition satisfied
 ```
@@ -594,8 +594,7 @@ Quest側は「到達したら進行する」ルールを扱えるが、Transform
 </div>
 
 <div>
-  <img src="/images/quest_area_trigger.png" class="rounded-xl border border-white/10 shadow-lg w-full" alt="Quest Area Trigger Placeholder" />
-  <div class="text-xs text-gray-400 mt-2 text-center">※Unity SceneビューのTriggerギズモ＋達成通知スクショに置換想定</div>
+  <video src="/videos/quest_area_trigger.mp4" autoplay loop muted playsinline class="rounded-xl border border-white/10 shadow-lg w-full" />
 </div>
 
 </div>
@@ -603,10 +602,10 @@ Quest側は「到達したら進行する」ルールを扱えるが、Transform
 <!--
 この境界が分かりやすく出るのが、地点到達型のクエストです。
 
-仕様としては、神殿入口の一定距離内に入ったら進行。
+仕様としては、クエストNPCの一定距離内に入ったら進行。
 実際に位置を観測するのはTransformやColliderを持つSimulation側です。
 
-そこでTempleEntranceの範囲内にいる、という空間的な意味に変換し、さらにQuest側ではTempleEntranceに到達した、というゲーム上意味のある事実として扱う。
+そこでQuestNpcの範囲内にいる、という空間的な意味に変換し、さらにQuest側ではQuestNpcに到達した、というゲーム上意味のある事実として扱う。
 
 Quest側は到達したら進行するというルールを知ることはできます。
 でも、ColliderやTransformを自分自身で観測する必要はありません。
@@ -628,7 +627,7 @@ Simulationは世界を観測する。
 Model側はそれに意味を与える。
 
 Transform.positionという実装上の値を、そのままQuestのロジックへ持っていく必要はありません。
-Questが欲しいのは、TempleEntranceに到達した、という意味を持った事実です。
+Questが欲しいのは、QuestNpcに到達した、という意味を持った事実です。
 -->
 
 ---
