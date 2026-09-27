@@ -482,40 +482,42 @@ layout: default
 
 # 同じ3Dキャラクターでも、文脈で変わる
 
+<div class="text-sm opacity-90 mb-3">
 3DだからViewではない、という話ではありません。<br>
-重要なのは、**ゲーム状態を決定しているか、決定済みの状態を表現しているか**です。
-
-<br>
+重要なのは、<b>ゲーム状態を決定しているか、決定済みの状態を表現しているか</b>です。
+</div>
 
 <div class="grid grid-cols-2 gap-4">
 
-<div class="p-3 border border-red-500/30 rounded-xl bg-red-500/5">
+<div class="p-3 border border-red-500/30 rounded-xl bg-red-500/5 flex flex-col justify-between">
 
-<h2 class="text-base font-bold text-red-300">探索中のプレイヤー</h2>
-
-<div class="text-xs text-gray-300 my-1">
-PlayerActor移動 → Transform変化 → ゲーム状態更新
+<div>
+  <h2 class="text-base font-bold text-red-300">探索中のプレイヤー</h2>
+  <div class="text-xs text-gray-300 mt-0.5 mb-2">
+    PlayerActor移動 → Transform変化 → ゲーム状態更新
+  </div>
 </div>
 
-<img src="/images/player_exploration.png" class="rounded-lg border border-red-500/20 shadow my-2 w-full h-36 object-cover" alt="Simulation Actor Placeholder" />
+<img src="/images/player_exploration.png" class="rounded-lg border border-red-500/20 shadow w-full aspect-video object-contain bg-black/40" alt="Simulation Actor" />
 
-<div class="text-xs text-red-200 font-semibold">
+<div class="text-xs text-red-200 font-semibold mt-2">
 ▶ Simulation Actor と見る方が自然（状態の「原因」）
 </div>
 
 </div>
 
-<div class="p-3 border border-emerald-500/30 rounded-xl bg-emerald-500/5">
+<div class="p-3 border border-emerald-500/30 rounded-xl bg-emerald-500/5 flex flex-col justify-between">
 
-<h2 class="text-base font-bold text-emerald-300">ターン制バトルの演出</h2>
-
-<div class="text-xs text-gray-300 my-1">
-Battle Model決定 → 3Dキャラが攻撃・被ダメージ演出
+<div>
+  <h2 class="text-base font-bold text-emerald-300">ターン制バトルの演出</h2>
+  <div class="text-xs text-gray-300 mt-0.5 mb-2">
+    Battle Model決定 → 3Dキャラが攻撃・被ダメージ演出
+  </div>
 </div>
 
-<img src="/images/battle_presentation.png" class="rounded-lg border border-emerald-500/20 shadow my-2 w-full h-36 object-cover" alt="View Placeholder" />
+<img src="/images/battle_presentation.png" class="rounded-lg border border-emerald-500/20 shadow w-full aspect-video object-contain bg-black/40" alt="View" />
 
-<div class="text-xs text-emerald-200 font-semibold">
+<div class="text-xs text-emerald-200 font-semibold mt-2">
 ▶ View として扱いやすい（状態の「結果」）
 </div>
 
