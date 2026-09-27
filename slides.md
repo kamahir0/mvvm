@@ -98,7 +98,7 @@ ViewModelは、Viewのピクセルや描画APIではなく、<br>
 <br>
 
 ```text
-Model / Application
+Model側
   PlayerHp = 23 / 100
         │
         ▼  presentation向けに解釈する
@@ -114,7 +114,7 @@ View
 
 <br>
 
-ViewModelは、Presentationのために意味を与える層です。
+ViewModelは、Presentationにとって意味のある状態をモデル化します。
 
 <!--
 最初にViewModelをどう捉えるかを整理します。
@@ -140,7 +140,7 @@ ViewModelは、Presentationの状態モデルである
 ここでまず、一つ目のキーワードです。
 ViewModelはModelのコピーではありません。
 
-Modelの値をただ横流しするだけなら、それはViewModelというよりDTOに近くなります。
+Modelの値をそのまま横流しするだけでは、ViewModelの役割を十分に説明できません。
 今日の話では、ViewModelをPresentationの状態モデルとして捉えます。
 -->
 
@@ -157,7 +157,7 @@ layout: default
 例：パーティーステータス画面。
 
 ```text
-Domain / Model
+Model側
   PartyMembers = [Alice, Bob, Carol]
         ↓
 ViewModel (Presentation状態)
@@ -180,7 +180,7 @@ View
 
 <div>
   <img src="/images/party_status_tabs.png" class="rounded-xl border border-white/10 shadow-lg w-full" alt="Party Status UI Placeholder" />
-  <div class="text-xs text-gray-400 mt-2 text-center">※実際のゲームステータス画面・タブ選択スクショに置換想定</div>
+  <div class="text-xs text-gray-400 mt-2 text-center">現在は４人目のメンバーを表示している</div>
 </div>
 
 </div>
@@ -302,7 +302,7 @@ API成功。Model層では 2凸 → 3凸 が確定
         ↓
 でも画面では、まだ2凸の状態から演出を始めたい
         ↓
-演出のrevealタイミングで、はじめて3凸を見せたい
+演出の結果開示タイミングで、はじめて3凸を見せたい
 ```
 
 <div class="text-sm mt-2">
@@ -369,15 +369,15 @@ var result = await useCase.LimitBreakAsync();
 // 表示上は、まだ旧状態を見せたまま演出する
 await presentation.PlayLimitBreakAsync(result);
 
-// reveal後に、表示上の現在として適用する
+// 結果を見せるタイミングで、表示上の現在として適用する
 viewModel.Apply(result);
 ```
 
 <br>
 
 ```text
-Model側の時間:  API成功 ───────────── 3凸
-表示上の時間:    2凸 ── 演出 ── reveal ── 3凸
+Model側:   2凸 ── API成功 → 3凸 ─────────
+表示上:    2凸 ───── 演出 ── 結果開示 → 3凸
 ```
 
 <!--
@@ -388,7 +388,7 @@ ViewとViewModelのbindingを捨てる必要はありません。
 
 UseCaseが完了して、Model側では結果が確定します。
 ただし表示上は旧状態のまま演出を再生します。
-結果を見せるrevealポイントに来たら、そこで初めてViewModelへ適用します。
+結果を見せるタイミングで、初めてViewModelへ適用します。
 
 するとViewはいつも通りViewModelに従って3凸表示へ変わる。
 -->
@@ -484,7 +484,7 @@ layout: default
 
 <div class="text-sm opacity-90 mb-3">
 3DだからViewではない、という話ではありません。<br>
-重要なのは、<b>ゲーム状態を決定しているか、決定済みの状態を表現しているか</b>です。
+重要なのは、<b>ゲーム状態の遷移に参加しているか、決定済みの状態を表現しているか</b>です。
 </div>
 
 <div class="grid grid-cols-2 gap-4">
@@ -494,14 +494,14 @@ layout: default
 <div>
   <h2 class="text-base font-bold text-red-300">探索中のプレイヤー</h2>
   <div class="text-xs text-gray-300 mt-0.5 mb-2">
-    PlayerActor移動 → Transform変化 → ゲーム状態更新
+    PlayerActorが移動 → Transformが変化 → ゲーム状態が変わる
   </div>
 </div>
 
 <img src="/images/player_exploration.png" class="rounded-lg border border-red-500/20 shadow w-full aspect-video object-contain bg-black/40" alt="Simulation Actor" />
 
 <div class="text-xs text-red-200 font-semibold mt-2">
-▶ Simulation Actor と見る方が自然（状態の「原因」）
+▶ Simulation Actor と見る方が自然（ゲーム状態の遷移に参加）
 </div>
 
 </div>
@@ -511,14 +511,14 @@ layout: default
 <div>
   <h2 class="text-base font-bold text-emerald-300">ターン制バトルの演出</h2>
   <div class="text-xs text-gray-300 mt-0.5 mb-2">
-    Battle Model決定 → 3Dキャラが攻撃・被ダメージ演出
+    Battle Modelで結果を決定 → 3Dキャラが演出
   </div>
 </div>
 
 <img src="/images/battle_presentation.png" class="rounded-lg border border-emerald-500/20 shadow w-full aspect-video object-contain bg-black/40" alt="View" />
 
 <div class="text-xs text-emerald-200 font-semibold mt-2">
-▶ View として扱いやすい（状態の「結果」）
+▶ View として扱いやすい（決定済みのゲーム状態を表現）
 </div>
 
 </div>
@@ -544,7 +544,7 @@ class: text-center
 
 # 3Dかどうかではない
 
-## 状態の<span class="text-red-400">原因</span>か、状態の<span class="text-emerald-400">結果</span>か
+## ゲーム状態を<span class="text-red-400">決める側</span>か、<br>決まった状態を<span class="text-emerald-400">見せる側</span>か
 
 <div class="pt-8 text-xl opacity-80">
 矢印の向きが違う
@@ -554,7 +554,7 @@ class: text-center
 ここは大事です。
 
 3Dかどうかではありません。
-そのオブジェクトがゲーム状態の原因なのか、結果なのか。
+そのオブジェクトが、ゲーム状態の遷移に参加しているのか、決定済みのゲーム状態を見せているのか。
 
 探索中のプレイヤーは、Transformが変わることでゲーム状態が変わる。
 ターン制バトルの演出では、ゲーム状態が決まった結果としてTransformやAnimatorが動く。
@@ -566,29 +566,29 @@ class: text-center
 layout: default
 ---
 
-# クエスト到達条件で境界が見える
+# 特定NPCへの接近条件で境界が見える
 
 <div class="grid grid-cols-2 gap-6 items-center">
 
 <div>
 
-仕様：クエストNPCから一定距離内に到達したら進行。
+仕様：クエストNPCの一定距離以内に近づいたら進行。
 
 ```text
 Observation / Simulation
   Transform.position = (127.3, 2.0, -83.5)
         ↓
 Spatial interpretation / Simulation
-  IsInsideArea(QuestNpc) == true
+  IsWithinRange(QuestNpc) == true
         ↓ 意味に変換する
 Quest / Model側の解釈
-  ReachedLocation(QuestNpc)
+  ApproachedNpc(QuestNpc)
         ↓
 Quest condition satisfied
 ```
 
 <div class="text-xs opacity-85 mt-2">
-Quest側は「到達したら進行する」ルールを扱えるが、TransformやColliderを自前で観測するわけではない。
+Quest側は「近づいたら進行する」ルールを扱えるが、TransformやColliderを自前で観測するわけではない。
 </div>
 
 </div>
@@ -600,14 +600,14 @@ Quest側は「到達したら進行する」ルールを扱えるが、Transform
 </div>
 
 <!--
-この境界が分かりやすく出るのが、地点到達型のクエストです。
+この境界が分かりやすく出るのが、特定NPCへの接近を条件にしたクエストです。
 
-仕様としては、クエストNPCの一定距離内に入ったら進行。
+仕様としては、クエストNPCの一定距離以内に近づいたら進行。
 実際に位置を観測するのはTransformやColliderを持つSimulation側です。
 
-そこでQuestNpcの範囲内にいる、という空間的な意味に変換し、さらにQuest側ではQuestNpcに到達した、というゲーム上意味のある事実として扱う。
+そこでQuestNpcの範囲内にいる、という空間的な意味に変換し、さらにQuest側ではQuestNpcに近づいた、というゲーム上意味のある事実として扱う。
 
-Quest側は到達したら進行するというルールを知ることはできます。
+Quest側は近づいたら進行するというルールを知ることはできます。
 でも、ColliderやTransformを自分自身で観測する必要はありません。
 -->
 
@@ -616,18 +616,18 @@ layout: center
 class: text-center
 ---
 
-# Simulationは世界を観測する
+# Simulationは空間上の出来事を検出する
 
-# Model側はそれに意味を与える
+# Quest側はそれを進行条件として解釈する
 
 <!--
 ここも今回のキーワードです。
 
-Simulationは世界を観測する。
-Model側はそれに意味を与える。
+Simulationは空間上の出来事を検出する。
+Quest側はそれを進行条件として解釈する。
 
 Transform.positionという実装上の値を、そのままQuestのロジックへ持っていく必要はありません。
-Questが欲しいのは、QuestNpcに到達した、という意味を持った事実です。
+Questが欲しいのは、QuestNpcに近づいた、という意味を持った事実です。
 -->
 
 ---
@@ -737,7 +737,7 @@ layout: default
 <div class="p-6 border-2 border-amber-500/50 rounded-xl bg-amber-500/10 text-center my-4">
   <div class="text-xl font-bold leading-relaxed">
     MVVMが得意なのは、<span class="text-emerald-400">表示上の状態をViewModelで表すこと</span>。<br>
-    ゲームが難しいのは、<span class="text-red-400">表示されているもの自身が状態遷移に参加すること</span>。
+    ゲームでMVVMが難しくなるのは、<span class="text-red-400">表示されているもの自身が状態遷移に参加する場面があること</span>。
   </div>
 </div>
 
