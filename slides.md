@@ -122,9 +122,9 @@ Viewをどう変更するかを指示する。
 
 ```text
 ViewModel
-  ├─ HpText = "23/100"
-  ├─ HpRate = 0.23
-  └─ IsDanger = true
+  ├─ HpText() → "23/100"
+  ├─ HpRate() → 0.23
+  └─ IsDanger() → true   // HpRate ≤ 30%
         ↓ binding
 View
 ```
@@ -174,9 +174,9 @@ Model側
         │
         ▼  presentation向けに解釈する
 ViewModel
-  HpText = "23/100"
-  HpRate = 0.23
-  IsDanger = true
+  HpText() → "23/100"
+  HpRate() → 0.23
+  IsDanger() → true      // HpRate ≤ 30%
         │
         ▼  binding / observe
 View
@@ -192,7 +192,7 @@ ViewModelは、Modelのコピーではなく、**Presentationにとって意味�
 - HPの例
 - Modelの値をそのまま流すだけではない
 - Viewにとって意味のある状態へ変換する
-- HpText、HpRate、IsDangerはPresentationの論理状態
+- HpText / HpRate / IsDanger は Model から解釈した Presentation の論理状態（例: IsDanger は 30% 以下で true）
 - Viewはそれを具体的な見た目へ変換する
 -->
 
@@ -223,7 +223,7 @@ View
 
 <div class="p-3 border border-emerald-500/40 rounded-xl bg-emerald-500/10 text-sm mt-3">
 
-**「今Dave（4人目）を見ている」は、ゲーム世界の事実ではない。**  
+**「いま4人目を見ている」は、ゲーム世界の事実ではない。**  
 それはPresentationの状態です。
 
 </div>
