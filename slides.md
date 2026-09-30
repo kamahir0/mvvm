@@ -1,8 +1,8 @@
 ---
 theme: default
-title: MVVMはなぜゲームに向かないと言われがちなのか
+title: MVVMはなぜゲームに合わないと言われがちなのか
 info: |
-  ## MVVMはなぜゲームに向かないと言われがちなのか
+  ## MVVMはなぜゲームに合わないと言われがちなのか
 class: text-center
 drawings:
   persist: false
@@ -10,7 +10,7 @@ transition: slide-left
 mdc: true
 ---
 
-# MVVMはなぜゲームに<br><span class="text-red-400">向かないと言われがち</span>なのか
+# MVVMはなぜゲームに<br><span class="text-red-400">合わないと言われがち</span>なのか
 
 <div class="pt-6 text-lg opacity-85">
 MVVMを否定する話ではなく、<br>ゲームでどう活かすかの話
@@ -20,6 +20,7 @@ MVVMを否定する話ではなく、<br>ゲームでどう活かすかの話
 - MVVMそのものを否定する話ではない
 - むしろMVVMをゲームでどう活かすかの話
 - 軸：ViewModelを表示用データではなく、Viewの仕様上取りうる論理状態として見る
+- 「合わない」と言われる典型は二つ：(1) ModelとPresentationの反映タイミング (2) SimulationをViewModelに押し込む
 - 後半：ゲームにはPresentationだけでなく、Simulationという状態空間もある
 -->
 
@@ -151,12 +152,12 @@ class: text-center
 # MVVMの強みは<br><span class="text-emerald-400">宣言的なPresentation State</span>
 
 <div class="pt-8 text-xl opacity-80">
-「Viewに何をさせるか」ではなく<br>
 「Viewは今どういう状態であるべきか」を表す
 </div>
 
 <!--
 - MVVMを推す理由をここで明確にする
+- 「Viewに何をさせるか」ではなく状態であるべきかを表す
 - Bindingそのものではなく、Presentationを宣言的な状態として表せること
 - View更新の命令列ではなく、現在の画面状態を見る
 - 状態として表すことで、仕様・テスト・再描画・復元を扱いやすくなる
@@ -255,7 +256,7 @@ layout: default
 
 <div>
 
-画面状態を型にすると、仕様の形が見えやすくなります。
+画面フェーズと、前の例のような **選択状態** をまとめて型にできます。
 
 ```csharp
 abstract record StatusScreenState;
@@ -263,7 +264,9 @@ abstract record StatusScreenState;
 record Loading()
   : StatusScreenState;
 
-record Loaded(MemberVm SelectedMember)
+record Loaded(
+  IReadOnlyList<MemberVm> Members,
+  int SelectedMemberIndex)
   : StatusScreenState;
 
 record Error(string Message)
@@ -277,9 +280,9 @@ record Error(string Message)
 ## 表現しにくくなる状態
 
 ```text
-LoadingなのにMemberが選択されている
+Loadingなのにタブが選択されている
+Loadedなのに SelectedMemberIndex が範囲外
 Errorなのに通常操作が有効
-Loadedなのに表示対象がない
 ```
 
 </div>
@@ -287,8 +290,8 @@ Loadedなのに表示対象がない
 </div>
 
 <!--
-- ViewModelを型として設計する例
-- Loading、Loaded、Errorなどを状態として分ける
+- 前スライドの SelectedMemberIndex は Loaded のフィールドとして型に入る
+- Loading / Loaded / Error は画面フェーズの例
 - 仕様上ありえない状態を作りにくくする
 - MVVMの宣言性はこういう設計と相性がよい
 -->
@@ -308,7 +311,7 @@ ViewModelが表すのは、Viewの仕様上取りうる論理状態
 - ここまでの整理
 - ViewModelはPresentation Stateを表す
 - ViewはViewModelの状態を投影する
-- 次からゲーム特有のずれを見る
+- 次から「合わない」典型の一つ：ModelとPresentationのずれ（反映タイミング）
 -->
 
 ---
@@ -316,6 +319,8 @@ layout: default
 ---
 
 # ゲームでは「現在」がずれる
+
+<div class="text-sm opacity-80 mb-2">合わないと言われる典型 <b>①</b> — Presentation と Model の反映タイミング</div>
 
 例：ソシャゲの限界突破演出。
 
@@ -416,10 +421,10 @@ Modelの最新値ではなく、Presentationの現在を表す
 layout: default
 ---
 
-# 反映タイミングをViewModelの外側で制御する
+# 反映タイミングはオーケストレーションで制御する
 
-View ↔ ViewModel のbindingは維持してよい。<br>
-制御すべきなのは、**Modelの結果をいつViewModelへ適用するか**です。
+View ↔ ViewModel の binding は維持してよい。<br>
+制御すべきなのは、**Model の結果をいつ `ViewModel` に反映するか**（演出フロー／UseCase 側）。
 
 <br>
 
@@ -443,11 +448,12 @@ VM:        2凸 ───────────── Apply() ─→ 3凸
 ```
 
 <!--
+- 「外側」＝ViewModelを捨てる話ではない。いつ Apply するかを決めるオーケストレーション層
 - ViewとViewModelの関係は維持できる
-- 調整するのはModel結果をViewModelへ反映するタイミング
 - UseCase完了時点ではModel側の結果確定
 - Presentation側は旧状態のまま演出
 - 結果開示時点でViewModelへ適用
+- ①のずれはここで片付く。次は②
 -->
 
 ---
@@ -455,52 +461,13 @@ layout: center
 class: text-center
 ---
 
-# ここからは<br>Presentationだけでは説明しにくい領域
-
-<div class="pt-8 text-xl opacity-80">
-状態を「見せる」だけではなく、<br>次の状態を「作る」ものがある
-</div>
+# より本質的な問題 <span class="text-amber-400 text-2xl"></span>
 
 <!--
-- ここで話を切り替える
-- ここまではPresentation Stateと反映タイミングの話
-- 次はViewModelの投影として扱いにくいもの
-- ゲーム世界の次状態を作る領域を見る
--->
-
----
-layout: default
----
-
-# この発表での「Simulation」
-
-ここでは便宜上、次の領域を **Simulation** と呼びます。
-
-<br>
-
-<div class="p-6 border border-amber-500/40 rounded-xl bg-amber-500/10">
-
-## 現在のゲーム世界の状態と入力から、
-## 次のゲーム世界の状態を作る領域
-
-```text
-state(t) + input → state(t+1)
-```
-
-</div>
-
-<br>
-
-<div class="text-sm opacity-80">
-MVVMの標準用語ではなく、Model / Presentation だけでは説明しにくい状態空間を分けるための呼び方です。
-</div>
-
-<!--
-- Simulationは独自の補助概念
-- MVVM標準用語ではない
-- 定義：現在のゲーム世界の状態と入力から、次のゲーム世界の状態を作る領域
-- 例：Transform、Velocity、Collider、接地状態、移動入力
-- 後半の状態空間を整理するための名前
+- 合わない典型②：Simulation を ViewModel の投影として扱う
+- ①は Presentation 内の反映タイミングで設計できる。ここから②
+- 本質と言い過ぎない。①も実務では重要
+- ViewModelの投影として扱いにくいもの＝ゲーム世界の次状態を作る領域
 -->
 
 ---
@@ -531,12 +498,46 @@ Transform.position が変わる
 **ゲーム世界の次の状態を作っています。**
 
 <!--
-- 探索中の3Dプレイヤーの例
+- 探索中の3Dプレイヤーの例（このあと Simulation と定義する）
 - 画面に表示されるのでPresentationの一部でもある
 - ただし入力を受けて移動する
 - Transformが他の判定に影響する
 - ViewModelの状態を見た目にしているだけではない
 - Simulationにも参加している
+-->
+
+---
+layout: default
+---
+
+# この発表での「Simulation」
+
+ここでは便宜上、次の領域を **Simulation** と呼びます。
+
+<br>
+
+<div class="p-6 border border-amber-500/40 rounded-xl bg-amber-500/10">
+
+## 現在のゲーム世界の状態と入力から、
+## 次のゲーム世界の状態を作る領域
+
+```text
+state(t) + input → state(t+1)
+```
+
+</div>
+
+<br>
+
+<div class="text-sm opacity-80">
+MVVMの標準用語ではなく、Model / Presentation だけでは説明しにくい状態空間を分けるための呼び方です。
+</div>
+
+<!--
+- 前スライドのプレイヤー移動のような領域に名前を付ける
+- Simulationは独自の補助概念。MVVM標準用語ではない
+- 例：Transform、Velocity、Collider、接地状態、移動入力
+- 後半の状態空間を整理するための名前
 -->
 
 ---
@@ -546,15 +547,10 @@ class: text-center
 
 # 投影か、状態遷移か
 
-<br>
-
-```text
-Presentation:
-  state → appearance
-
-Simulation:
-  state(t) + input → state(t+1)
-```
+<div class="pt-6 text-lg opacity-85 font-mono leading-relaxed">
+Presentation: state → appearance<br>
+Simulation: state(t) + input → state(t+1)
+</div>
 
 <!--
 - Presentation：状態を見た目へ変換する
@@ -668,9 +664,10 @@ layout: center
 class: text-center
 ---
 
-<div class="text-2xl font-bold leading-relaxed">
-Simulationは空間上の出来事を検出する<br>
-<span class="opacity-90">Modelはそれをゲーム上の事実として解釈する</span>
+# Simulationは空間の出来事を検出する
+
+<div class="pt-6 text-xl opacity-85">
+Modelはゲーム上の事実として解釈する
 </div>
 
 <!--
@@ -816,16 +813,11 @@ layout: center
 class: text-center
 ---
 
-# MVVMを活かすには
-
-## ViewModelを<br><span class="text-emerald-400">Presentationの状態空間</span>として設計する
-
-<div class="pt-8 text-xl opacity-80">
-Model / Simulation / Presentation の現在を混ぜない
-</div>
+# ViewModelを<br><span class="text-emerald-400">Presentationの状態空間</span>として設計する
 
 <!--
-- 結論
+- 結論・MVVMを活かすには
+- Model / Simulation / Presentation の現在を混ぜない
 - MVVMの強みはPresentationを宣言的な状態として扱えること
 - ViewModelはViewの仕様上取りうる状態を表す
 - Modelの最新状態を常に同期する箱ではない
